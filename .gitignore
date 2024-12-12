@@ -166,3 +166,4 @@ methods_README.md
 output/
 genscore_old/
 .DS_Store
+data/
