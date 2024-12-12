@@ -2,39 +2,47 @@
 
 import pandas as pd
 
-
-ClinVar = ["Benign", 
-          "Pathogenic", 
-          "Likely_benign", 
-          "Likely_pathogenic", 
-          "Benign/Likely_benign", 
-          "Pathogenic/Likely_pathogenic", 
-          "Uncertain_significance", 
-          "not_reported", 
-          "CONFLICTING_classifications_of_pathogenicity", 
-          "drug_response"
-          ]
+# 'not_reported' 'Benign' 'Uncertain_significance' 'Likely_benign'
+#  'Benign/Likely_benign' 'Conflicting_classifications_of_pathogenicity'
+#  'Pathogenic' 'drug_response' 'Pathogenic/Likely_pathogenic'
+#  'Conflicting_classifications_of_pathogenicity|drug_response|other'
+#  'Benign|drug_response' 'Pathogenic|other' 'Likely_pathogenic'
+#  'Likely_benign|other' 'Likely_pathogenic|association'
+#  'Pathogenic/Likely_pathogenic|risk_factor'
+#  'Conflicting_classifications_of_pathogenicity|association' 'not_provided'
+#  'Likely_benign|drug_response|other'
+BENIGN = [
+    "Benign", 
+    "Likely_benign", 
+    "Benign/Likely_benign"
+]
+PATHOGENIC = [
+    "Pathogenic", 
+    "Likely_pathogenic", 
+    "Pathogenic/Likely_pathogenic",
+    "Likely_pathogenic|association"
+]
+UNCERTAIN = [
+    "Uncertain_significance", 
+    "Conflicting_classifications_of_pathogenicity",
+]
 
 def group_variants(df):
-    benign = df[df["CLNSIG"].isin(["Benign", "Likely_benign", "Benign/Likely_benign"])]
-    #benign = df[df["CLNSIG"].isin(["benign", "likely_benign"])]
-    pathogenic = df[df["CLNSIG"].isin(["Pathogenic", "Likely_pathogenic", "Pathogenic/Likely_pathogenic"])]
-    not_reported = df[df["CLNSIG"].isin(["not_reported"])]
-    #unknown = df[~df["CLNSIG"].isin(["benign", "likely_benign", "pathogenic", "likely_pathogenic"])]
-    
+    # benign = df[df["CLNSIG"] == "Benign"]
+    # pathogenic = df[df["CLNSIG"] == "Pathogenic"]
+    # uncertain = df[df["CLNSIG"] == "Uncertain_significance"]
+    benign = df[df["CLNSIG"].isin(BENIGN)]
+    pathogenic = df[df["CLNSIG"].isin(PATHOGENIC)]
+    uncertain = df[df["CLNSIG"].isin(UNCERTAIN)]
 
     groups = {
         "benign": benign,
         "pathogenic": pathogenic,
-        "not_reported": not_reported
+        "uncertain": uncertain
     }
-    #group_df = pd.concat[benign, pathogenic, not_reported]
-    #grouped_data = pd.concat([benign, pathogenic, not_reported]).groupby("CLNSIG")["RankScore"].agg(["mean", "std", "count"])
-    grouped_data = df.groupby("CLNSIG")["RankScore"].agg(["mean", "std", "count"])
+    grouped_data_groups = pd.concat([benign, pathogenic, uncertain]).groupby("CLNSIG")["RankScore"].agg(["mean", "std", "count"])
+    grouped_data_all = df.groupby("CLNSIG")["RankScore"].agg(["mean", "std", "count"])
 
+    # Count number of variants in each group 
     counts = {k: v.shape[0] for k, v in groups.items()}
-    return groups, counts, grouped_data
-
-def calculate_rank_score(df):
-    # Already calculated during parsing, if needed can be recalculated here
-    return df
+    return groups, counts, grouped_data_groups, grouped_data_all

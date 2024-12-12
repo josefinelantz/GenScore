@@ -29,21 +29,28 @@ import pandas as pd
 #     plt.savefig(output_path)
 #     plt.close()
 
-
-def plot_box_distribution(df, output_path="rank_score_dist_box.png", by="CLNSIG", column="RankScore"):
+def plot_box_distribution(df, output_path="rank_score_dist_box.png"):
     """Plots the distribution of RankScores within each CLNSIG group"""
-    df.boxplot(by=by, column=column)
-    plt.ylabel(column)
-    plt.title(f"{column} Distribution by {by}")
+    plt.figure(figsize=(10, 6))
+    sns.boxplot(x="CLNSIG", y="RankScore", data=df)
+    plt.ylabel("RankScore")
+    plt.title("RankScore Distribution by CLNSIG")
     plt.savefig(output_path)
     plt.close()
+# def plot_box_distribution(df, output_path="rank_score_dist_box.png"):
+#     """Plots the distribution of RankScores within each CLNSIG group"""
+#     df.boxplot(x="CLNSIG", y="RankScore")
+#     plt.ylabel("RankScore")
+#     plt.title("RankScore Distribution by CLNSIG")
+#     plt.savefig(output_path)
+#     plt.close()
 
-def plot_hist_distribution(df, output_path="rank_score_dist_hist.png", by="CLNSIG", column="RankScore", bins=20):
+def plot_hist_distribution(df, output_path="rank_score_dist_hist.png", bins=20):
     """Plots the distribution of RankScores within each CLNSIG group"""
-    df.hist(by=by, column=column)
-    plt.xlabel(column)
+    df.hist("CLNSIG", "RankScore")
+    plt.xlabel("RankScore")
     plt.ylabel("Frequency")
-    plt.title(f"{column} Distribution by {by}")
+    plt.title("RankScore Distribution by CLLNSIG")
     plt.savefig(output_path)
 
 def plot_grouped_data(grouped_data, output_path="grouped_data.png"):

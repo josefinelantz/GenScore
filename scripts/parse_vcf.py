@@ -54,15 +54,28 @@ CONSEQUENCE_ORDER = [
     "sequence_variant",
     "not_reported"
 ]
-
-def csq_to_dict(csq_fields, variant_csq):
-    fields = variant_csq.split(",")[0].split("|")
-    return dict(zip(csq_fields, fields))
-
-def scores_to_dict(score_categories, variant_rank_result):
-    category_scores = [float(x) for x in variant_rank_result.split("|")]
-    return dict(zip(score_categories, category_scores))
-
+BENIGN = [
+    "Benign", 
+    "Likely_benign", 
+    "Benign/Likely_benign"
+]
+PATHOGENIC = [
+    "Pathogenic", 
+    "Likely_pathogenic", 
+    "Pathogenic/Likely_pathogenic",
+    "Likely_pathogenic|association"
+]
+UNCERTAIN = [
+    "Uncertain_significance", 
+    "Conflicting_classifications_of_pathogenicity",
+]
+def classify(clnsig):
+    if clnsig.casefold() in BENIGN:
+        return "BENIGN"
+    elif clnsig.casefold() in PATHOGENIC:
+        return "PATHOGENIC"
+    elif clnsig.casefold() in UNCERTAIN:
+        return "UNCERTAIN"
 
 def parse_vcf(vcf_file):
     """ Parses vcf_file using cyvcf2 
@@ -71,43 +84,49 @@ def parse_vcf(vcf_file):
     """
     # Read VCF file into a VCF-object
     vcf = VCF(vcf_file)
-
-    # Get the fields present in INFO["CSQ"] for this VCF
-    csq_fields = vcf.get_header_type("CSQ")["Description"][51:].split("|")
-
-    data = []
-    #clin_sig = []
-    #rank_result = []
-    #rank_score = []
     
+    data = []
+     
     for variant in vcf:
         chrom = variant.CHROM
         pos = variant.POS
         ref = variant.REF
         alt = variant.ALT[0]
-        info = variant.INFO
+        info = dict(variant.INFO)
+
+        variant = f"{chrom}_{pos}_{ref}_{alt}"
         rank_result = info.get("RankResult", "0|0|0|0|0|0")
-        rank_score = info.get("RankScore", "")[2:]
-        af, pp, csq, vcqf, vaf, clnsig = rank_result.split("|")
-        #rank_score = sum(map(float, rank_result.split("|")))
-        clin_sig = info.get("CLNSIG", "not_reported")
-        csq_dict = csq_to_dict(csq_fields, variant.INFO["CSQ"])
+        af, pp, con, vcqf, vaf, clin = [float(x) for x in rank_result.split("|")]
+        rank_score = float(info["RankScore"][2:])
+        clnsig = info.get("CLNSIG", "not_reported") 
+
+        # if clnsig and rank_score:
+        #     if "benign" in clnsig.lower():
+        #         data["Group"].append("benign")
+        #     elif "pathogenic" in clnsig.lower():
+        #         data["Group"].append("pathogenic")
+        #     elif "uncertain" in clnsig.lower():
+        #         data["Group"].append("uncertain")
+        #     else:
+        #         continue 
+        group = classify(clnsig)
+
         data.append({
-            "CHROM": chrom,
-            "POS": pos,
-            "REF": ref, 
-            "ALT": alt,
-            "CAT_AF_SCORE": float(af),
-            "CAT_PP_SCORE": float(pp),
-            "CAT_CSQ_SCORE": float(csq),
-            "CAT_VCQF_SCORE": float(vcqf),
-            "CAT_VAF_SCORE": float(vaf),
-            "CAT_CLNSIG_SCORE": float(clnsig),
-            "CLNSIG": clin_sig,
-            "RankScore": float(rank_score),
-            "RankResult": rank_result
+            "VARIANT": variant,
+            "AF": af,
+            "PP": pp,
+            "CON": con,
+            "VCQF": vcqf,
+            "VAF": vaf,
+            "CLIN": clin,
+            "CLNSIG": clnsig,
+            "RankScore": rank_score, 
+            "Group": group
         })
-    
+
     df = pd.DataFrame(data)
-    print(df.head)
+    # benign = df[df["Group"] == "BENIGN"]
+    # pathogenic = df[df["Group"] == "PATHOGENIC"]
+    # uncertain = df[df["Group"] == "UNCERTAIN"]
+    # grouped_df = pd.concat([benign, pathogenic, uncertain])
     return df
