@@ -5,29 +5,18 @@ import numpy as np
 import seaborn as sns
 import pandas as pd
 
-# def plot_scatter(df, output_path="scatter.png"):
-#     """Plots distribution based on rank_score interval and clnsig group.
-#     Plot rankscore on x-axis and a random y-axis. 
-#     Color code the points based on their CLNSIG group. 
-#     Shows the overlaps between different CLNSIG groups and how they distribute across the RankScore range"""
-    
-#     filtered_df = df[(df["CLNSIG"] == "Benign") | (df["CLNSIG"] == "Likely_benign") | 
-#                      (df["CLNSIG"] == "Pathogenic") | (df["CLNSIG"] == "Likely_pathogenic")]
-    
-#     colors = {"Benign": "blue", "Likely_benign": "lightblue", "Pathogenic": "red", "Likely_pathogeic": "pink"}
-#     filtered_df["color"] = filtered_df["CLNSIG"].map(colors)
-#     #benign = df.loc[df["CLNSIG"].isin([["Benign", "Likely_benign", "Benign/Likely_benign"]])] 
-#     #pathogenic = df.loc[df["CLNSIG"].isin(["Pathogenic", "Likely_pathogenic", "Pathogenic/Likely_pathogenic"])]
-
-#     plt.scatter(filtered_df["RankScore"], np.random.rand(len(filtered_df)), c=filtered_df["color"])
-#    # plt.scatter(pathogenic["RankScore"], np.random.rand(len(pathogenic)), color="red", label="Pathogenic")
-
-#     plt.xlabel("RankScore")
-#     plt.ylabel("Random Y-axis")
-#     plt.title("RankScore Distribution by CLNSIG")
-#     plt.legend()
-#     plt.savefig(output_path)
-#     plt.close()
+def plot_variant_scores(df, output_path="variant_rank_scores.png"):
+    """
+    Plot RankScore for benign and pathogenic variants. 
+    Parameters:
+        - df (pd.DataFrame): DataFrame with columns "RankScore" and "Group"
+    """
+    plt.figure(figsize=(10, 6))
+    sns.boxplot(x=df.index.values, y="RankScore", data=df)
+    plt.title("Comparison of Rank Scores between Benign and Pathogenic Variants")
+    plt.ylabel("RankScore")
+    plt.xlabel("Group")
+    plt.savefig(output_path)
 
 def plot_box_distribution(df, output_path="rank_score_dist_box.png"):
     """Plots the distribution of RankScores within each CLNSIG group"""

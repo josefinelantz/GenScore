@@ -3,12 +3,14 @@
 import argparse
 from scripts.parse_vcf import parse_vcf
 from scripts.analyze_scores import group_variants
-from scripts.visualize import plot_box, plot_stacked, plot_box_distribution, plot_hist_distribution, plot_grouped_data
+from scripts.visualize import plot_box, plot_stacked, plot_box_distribution, plot_hist_distribution, plot_grouped_data, plot_variant_scores
 
 def main(vcf_path, output_dir):
     print("Parsing VCF...")
     df = parse_vcf(vcf_path)
+    df.to_csv("df.csv")
 
+    plot_variant_scores(df[["Group", "RankScore"]])
    # print("Grouping variants...")
     groups, counts, grouped_data_groups, grouped_data_all = group_variants(df)
     print("Variant counts:", counts)

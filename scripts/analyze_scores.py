@@ -26,7 +26,6 @@ UNCERTAIN = [
     "Uncertain_significance", 
     "Conflicting_classifications_of_pathogenicity",
 ]
-
 def group_variants(df):
     # benign = df[df["CLNSIG"] == "Benign"]
     # pathogenic = df[df["CLNSIG"] == "Pathogenic"]
