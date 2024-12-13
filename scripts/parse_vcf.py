@@ -100,15 +100,6 @@ def parse_vcf(vcf_file):
         rank_score = float(info["RankScore"][2:])
         clnsig = info.get("CLNSIG", "not_reported") 
 
-        # if clnsig and rank_score:
-        #     if "benign" in clnsig.lower():
-        #         data["Group"].append("benign")
-        #     elif "pathogenic" in clnsig.lower():
-        #         data["Group"].append("pathogenic")
-        #     elif "uncertain" in clnsig.lower():
-        #         data["Group"].append("uncertain")
-        #     else:
-        #         continue 
         group = classify(clnsig)
 
         data.append({
@@ -125,8 +116,4 @@ def parse_vcf(vcf_file):
         })
 
     df = pd.DataFrame(data)
-    # benign = df[df["Group"] == "BENIGN"]
-    # pathogenic = df[df["Group"] == "PATHOGENIC"]
-    # uncertain = df[df["Group"] == "UNCERTAIN"]
-    # grouped_df = pd.concat([benign, pathogenic, uncertain])
     return df
