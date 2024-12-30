@@ -167,3 +167,5 @@ output/
 genscore_old/
 .DS_Store
 data/
+*.png
+*.csv

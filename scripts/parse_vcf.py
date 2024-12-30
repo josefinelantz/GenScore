@@ -4,6 +4,11 @@ from cyvcf2 import VCF
 import pandas as pd
 
 def parse_vcf(file_path):
+    """ 
+    Reads VCF and returns df with colums:
+    CHROM_POS_REF_ALT, CHROM_POS, AF, PP, CON, VCQF,
+    LIN, CLIN, CLNSIG, RANK_SCORE
+    """
     # load the VCF 
     vcf = VCF(file_path)
     # declare variable for extracted data
