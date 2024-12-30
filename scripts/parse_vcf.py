@@ -3,37 +3,39 @@
 from cyvcf2 import VCF
 import pandas as pd
 
-def parse_vcf(vcf_path):
-    vcf = VCF(vcf_path)
+def parse_vcf(file_path):
+    # load the VCF 
+    vcf = VCF(file_path)
+    # declare variable for extracted data
     data = []
-    
+    # iterate over variant in the VCF and extract required fields
     for variant in vcf:
+        chrom = variant.CHROM
+        pos = variant.POS
+        ref = variant.REF
+        alt = variant.ALT[0]
         info = variant.INFO
-        csq = info.get('CSQ', [])
-        clin_sig = info.get('CLIN_SIG', 'unknown')
-        rank_result = info.get('RankResult', '0|0|0|0|0|0')
-        rank_score = sum(map(int, rank_result.split('|')))
-        
-        # Assuming CSQ is a list with fields separated by '|'
-        # Adjust the parsing based on actual CSQ format
-        csq_fields = csq[0].split('|') if csq else [''] * 6
-        consequence = csq_fields[0] if len(csq_fields) > 0 else ''
-        cosmic = csq_fields[1] if len(csq_fields) > 1 else ''
-        clin_var = clin_sig
-        gnomad_af = float(csq_fields[2]) if len(csq_fields) > 2 else 0.0
-        sift = csq_fields[3] if len(csq_fields) > 3 else ''
-        polyphen = csq_fields[4] if len(csq_fields) > 4 else ''
-        
+        # format strings for extracting controls 
+        chrom_pos = f"{chrom}_{pos}"
+        ref_alt = f"{ref}_{alt}"
+        # separate category scores and convert to numerical values 
+        af, pp, con, vcqf, lin, clin = [float(x) for x in info.get("RankResult", "0|0|0|0|0|0").split("|")]
+        # extract rank score
+        rank_score = float(info.get("RankScore")[2:])
+        # extract CLNSIG, if not exist, return "no_value" to avoid missing values 
+        clnsig = info.get("CLNSIG", "no_value") 
+        # append the extracted data to the output list
         data.append({
-            'consequence': consequence,
-            'cosmic': cosmic,
-            'clin_var': clin_var,
-            'gnomad_af': gnomad_af,
-            'sift': sift,
-            'polyphen': polyphen,
-            'rank_result': rank_result,
-            'rank_score': rank_score
+            "VARIANT": f"{chrom_pos}_{ref_alt}",
+            "CHROM_POS": chrom_pos,
+            "AF": af,
+            "PP": pp,
+            "CON": con,
+            "VCQF": vcqf,
+            "LIN": lin,
+            "CLIN": clin,
+            "CLNSIG": clnsig,
+            "RANK_SCORE": rank_score
         })
-    
-    df = pd.DataFrame(data)
-    return df
+
+    return pd.DataFrame(data)
