@@ -1,3 +1,6 @@
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 # 1. Investigate low-scoring controls
 def investigate_low_scoring_controls(df, score_threshold=10):
     """

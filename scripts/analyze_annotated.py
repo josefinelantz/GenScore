@@ -1,3 +1,6 @@
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score, roc_curve
 # Assuming the dataset 'df' has the necessary columns: GROUP, NO_CLIN_RANK_SCORE, y_true, IS_CONTROL
 
 # 1. Focus on CLNSIG-annotated variants (benign and pathogenic)

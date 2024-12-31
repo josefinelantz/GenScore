@@ -5,10 +5,18 @@ import seaborn as sns
 
 def violin_plot_by_group(df, column):
     sns.violinplot(data=df, hue="GROUP", y=column)
-    #plt.title(f"Violin Plot by Group for {column}")
+    plt.title(f"Violin Plot by Group for {column}")
     plt.ylabel("Rank Score - Cinical Significance Score")
     plt.legend(loc="lower right", title="Groups")  # Adjust legend position
     plt.savefig("violin_plot_subtracted_clin_score.png")
+    plt.show()
+
+def violin_benign_pathogenic(filtered_df):
+    sns.violinplot(data=filtered_df, hue="y_true", y="NO_CLIN_RANK_SCORE", palette="pastel", legend=False)
+    plt.title("Score Distributions for Benign and Pathogenic Variants")
+    plt.xlabel("True Label (0=Benign, 1=Pathogenic)")
+    plt.ylabel("Rank Score - CLIN Score")
+    plt.savefig("violin_ben_path.png")
     plt.show()
 
 def add_jitter(values, jitter_amount=1.5):
@@ -20,13 +28,12 @@ def scatter_plot_all_by_group(df, x_col, y_col, hue="GROUP"):
     # Adding jitter to separate overlapping points slightly
     jittered_index = add_jitter(df['VariantIndex'])
     # Create scatterplot with jittered points
-    #plt.figure(figsize=(12, 6))
     plt.scatter(jittered_index, df['RANK_SCORE'], c=df['Color'], alpha=0.8, edgecolor='white', s=90)
 
     # Add labels and title
     plt.xlabel("Variant Index", fontsize=12)
     plt.ylabel("Rank Score", fontsize=12)
-    #plt.title("Variants by Rank Score and CLNSIG Group", fontsize=14)
+    plt.title("Variants by Rank Score and CLNSIG Group", fontsize=14)
     plt.xticks([])
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
@@ -43,39 +50,21 @@ def scatter_plot_all_by_group(df, x_col, y_col, hue="GROUP"):
     plt.savefig("jitter_scatter_variants_by_rankscore_group.png")
     plt.show()
 
-def scatter_plot_with_controls(df, x_column, y_column):
+def scatter_plot_with_controls(df):
     plt.figure(figsize=(12, 6))
-    #df["VariantIndex"] = range(len(df))
-    
-    plt.scatter(
-        df.index, 
-        df["RANK_SCORE"], c="gray", alpha=0.6, edgecolor="black", s=30, label="All Variants"
-    )
 
+    sns.scatterplot(data=filtered_df, x=filtered_df.index, y="NO_CLIN_RANK_SCORE", hue="GROUP")
     # Scatter controls
-    controls = df[df["is_control"]]
+    controls = df[df["IS_CONTROL"]]
     plt.scatter(
         controls.index, controls["RANK_SCORE"],
-        c="gold", edgecolor="black", s=100, label="Positive Controls"
+        c="gold", edgecolor="black", s=50, label="Positive Controls"
     )
-
-    # Add threshold line (optional)
-    #threshold = 10
-    #plt.axhline(y=threshold, color="red", linestyle="--", label=f"Threshold = {threshold}")
-
-    # Titles and labels
-    #plt.title("Controls Relative All Variants", fontsize=14)
-    plt.xlabel("Variant Index", fontsize=12)
-    plt.ylabel("Rank Score", fontsize=12)
-
-    plt.savefig("scatter_plot_highlighted_controls.png")
-    #plt.tight_layout()
+    plt.xticks([])
+    plt.title("Scatterplot with Pathogenic Controls Highlighted")
+    plt.legend(loc="lower right")
+    plt.savefig("scatter_controls.png")
     plt.show()
-
-    
-    #sns.scatterplot(data=df, x=x_column, y=y_column, hue="GROUP", style="IS_CONTROL", palette="pastel")
-   # plt.title(f"Scatter Plot of {x_column} vs {y_column}")
-    #plt.show()
 
 def stacked_barplot_for_controls(df):
     """
@@ -105,7 +94,7 @@ def stacked_barplot_for_controls(df):
     )
     
     #stacked_data = control_data[["AF", "PP", "CON", "VCQF", "LIN", "CLIN"]].mean()
-    #plt.title("Category Contribution for Known Controls")
+    plt.title("Category Contribution for Known Controls")
     plt.savefig("stacked_barplot_controls_category_scoring.png")
     plt.xlabel("Positive Controls", fontsize=12)
     plt.ylabel("Category Score Contribution", fontsize=12)
