@@ -1,14 +1,20 @@
-[CLNSIG]
-BENIGN = "Benign"
-PATHOGENIC = "Pathogenic"
-LIKELY_BENIGN = "Likely_benign"
-LIKELY_PATHOGENIC = "Likely_pathogenic"
-BENIGN_OR_LIKELY_BENIGN = "Benign/Likely_benign"
-PATHOGENIC_OR_LIKELY_PATHOGENIC = "Pathogenic/Likely_pathogenic"
-UNCERTAIN_SIGNIFICANCE = "Uncertain_significance"
-NOT_REPORTED = "not_reported"
-CONFLICTING_CLASSIFICATIONS_OF_PATHOGENICITY = "CONFLICTING_classifications_of_pathogenicity"
-DRUG_RESPONSE = "drug_response"
+GROUPS_WITH_LABELS = {
+    "benign": ["Benign", "Likely_benign", "Benign/Likely_benign", "Benign|drug_response", "Likely_benign|other", "Likely_benign|drug_response|other"], 
+    "pathogenic": ["Pathogenic", "Likely_pathogenic", "Pathogenic/Likely_pathogenic", "Pathogenic|other", "Likely_pathogenic|association", "Pathogenic/Likely_pathogenic|risk_factor"],
+    "uncertain": ["Uncertain_significance", "Conflicting_classifications_of_pathogenicity", "Conflicting_classifications_of_pathogenicity|drug_response|other", "Conflicting_classifications_of_pathogenicity|association"],
+    "other": ["not_provided", ""]
+}
+
+CLNSIG_VALUES = ["", "Benign", "Uncertain_significance", "Likely_benign",
+       "Benign/Likely_benign",
+       "Conflicting_classifications_of_pathogenicity", "Pathogenic",
+       "drug_response', 'Pathogenic/Likely_pathogenic",
+       "Conflicting_classifications_of_pathogenicity|drug_response|other",
+       "Benign|drug_response", "Pathogenic|other", "Likely_pathogenic",
+       "Likely_benign|other', 'Likely_pathogenic|association",
+       "Pathogenic/Likely_pathogenic|risk_factor",
+       "Conflicting_classifications_of_pathogenicity|association",
+       "not_provided", "Likely_benign|drug_response|other"]
 
 CONSEQUENCE_ORDER = [
     "transcript_ablation",
