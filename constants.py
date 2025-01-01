@@ -1,20 +1,27 @@
 GROUPS_WITH_LABELS = {
-    "benign": ["Benign", "Likely_benign", "Benign/Likely_benign", "Benign|drug_response", "Likely_benign|other", "Likely_benign|drug_response|other"], 
-    "pathogenic": ["Pathogenic", "Likely_pathogenic", "Pathogenic/Likely_pathogenic", "Pathogenic|other", "Likely_pathogenic|association", "Pathogenic/Likely_pathogenic|risk_factor"],
-    "uncertain": ["Uncertain_significance", "Conflicting_classifications_of_pathogenicity", "Conflicting_classifications_of_pathogenicity|drug_response|other", "Conflicting_classifications_of_pathogenicity|association"],
-    "other": ["not_provided", ""]
-}
-
-CLNSIG_VALUES = ["", "Benign", "Uncertain_significance", "Likely_benign",
-       "Benign/Likely_benign",
-       "Conflicting_classifications_of_pathogenicity", "Pathogenic",
-       "drug_response', 'Pathogenic/Likely_pathogenic",
-       "Conflicting_classifications_of_pathogenicity|drug_response|other",
-       "Benign|drug_response", "Pathogenic|other", "Likely_pathogenic",
-       "Likely_benign|other', 'Likely_pathogenic|association",
-       "Pathogenic/Likely_pathogenic|risk_factor",
-       "Conflicting_classifications_of_pathogenicity|association",
-       "not_provided", "Likely_benign|drug_response|other"]
+    "benign": ['Benign',
+               'Likely_benign',
+               'Benign/Likely_benign',
+               'Benign|drug_response',
+               'Likely_benign|other',
+               'Likely_benign|drug_response|other',
+               'Likely_benign|other, Likely_pathogenic|association'
+               ], 
+    "pathogenic": ['Pathogenic',
+                   'Pathogenic/Likely_pathogenic',
+                   'Pathogenic|other',
+                   'Likely_pathogenic',
+                   'Likely_pathogenic|association',
+                   'Pathogenic/Likely_pathogenic|risk_factor',
+                   'drug_response, Pathogenic/Likely_pathogenic'
+                   ],
+    "uncertain": ['Conflicting_classifications_of_pathogenicity',
+                  'Conflicting_classifications_of_pathogenicity|drug_response|other',
+                  'Conflicting_classifications_of_pathogenicity|association',
+                  'Uncertain_significance'
+                  ],
+    "other": ['', 'not_provided']
+    }
 
 CONSEQUENCE_ORDER = [
     "transcript_ablation",
