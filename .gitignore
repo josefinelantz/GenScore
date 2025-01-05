@@ -165,7 +165,7 @@ cython_debug/
 methods_README.md
 output/
 genscore_old/
-.DS_Store
+.DS_Store/
 data/
 *.png
 *.csv
