@@ -23,6 +23,9 @@ GROUPS_WITH_LABELS = {
     "other": ['', 'not_provided']
     }
 
+INFO_KEYS = ["CSQ", "RankResult", "RankScore", "CLNSIG", "AF", "DP", "GNOMAD_AF"]
+CSQ_KEYS = ["Consequence", "SIFT", "PolyPhen", "gnomAD_AF", "COSMIC", "CLIN_SIG"]
+
 CONSEQUENCE_ORDER = [
     "transcript_ablation",
     "splice_acceptor_variant", 

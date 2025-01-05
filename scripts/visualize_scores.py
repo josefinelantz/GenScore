@@ -3,20 +3,51 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+def violin_plot_by_group_with_counts(df, column="ADJUSTED_SCORE"):
+    # Group our dataset with our 'Group' variable
+    grouped = df.groupby('GROUP')[column]
+    medians = grouped.median().values
+    nobs = df['GROUP'].value_counts().values
+    nobs = [str(x) for x in nobs.tolist()]
+    nobs = ["n: " + i for i in nobs]
+
+    # Init a figure and axes
+    fig, ax = plt.subplots(figsize=(10, 8))
+
+    # Create the plot with different colors for each group using hue
+    ax = sns.violinplot(x="GROUP", y=column, hue="GROUP", data=df)
+    
+    # Add text to the figure
+    pos = range(len(nobs))
+    for tick, label in zip(pos, ax.get_xticklabels()):
+        ax.text(pos[tick], medians[tick] + 2, nobs[tick],
+        horizontalalignment='left',
+        size='medium',
+        color='black')
+
+    # Add a title and axis label
+    ax.set_title('Distribution by Group for Adjusted Score')
+    plt.xlabel("")
+    plt.xticks([])
+
+    # Add a legend
+    legend_elements = [
+        plt.Line2D([0], [0], marker='o', color='w', label='Other', markerfacecolor='#5975A4', markersize=10),
+        plt.Line2D([0], [0], marker='o', color='w', label='Benign', markerfacecolor='#CC8963', markersize=10),
+        plt.Line2D([0], [0], marker='o', color='w', label='Uncertain', markerfacecolor='#609E6E', markersize=10),
+        plt.Line2D([0], [0], marker='o', color='w', label='Pathogenic', markerfacecolor='#B65D60', markersize=10),
+        plt.Line2D([0], [0], marker='o', color='w', label='Drug_Response', markerfacecolor='#857AAB', markersize=10)
+    ]
+    plt.legend(handles=legend_elements, loc='best', bbox_to_anchor=(0.5, 0., 0.5, 0.5))
+    plt.savefig("distribution_by_group_for_adjusted_score.png")
+    plt.show()
+
 def violin_plot_by_group(df, column):
     sns.violinplot(data=df, hue="GROUP", y=column)
     plt.title(f"Violin Plot by Group for {column}")
     plt.ylabel("Rank Score - Cinical Significance Score")
     plt.legend(loc="lower right", title="Groups")  # Adjust legend position
     plt.savefig("violin_plot_subtracted_clin_score.png")
-    plt.show()
-
-def violin_benign_pathogenic(filtered_df):
-    sns.violinplot(data=filtered_df, hue="y_true", y="NO_CLIN_RANK_SCORE", palette="pastel", legend=False)
-    plt.title("Score Distributions for Benign and Pathogenic Variants")
-    plt.xlabel("True Label (0=Benign, 1=Pathogenic)")
-    plt.ylabel("Rank Score - CLIN Score")
-    plt.savefig("violin_ben_path.png")
     plt.show()
 
 def add_jitter(values, jitter_amount=1.5):
