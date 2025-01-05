@@ -1,8 +1,8 @@
 import pandas as pd 
 
-from constants import GROUPS_WITH_LABELS
+from constants import GROUPS_WITH_LABELS, CONTROLS
 
-def group_variants(df, from_col="CLNSIG", groups=GROUPS_WITH_LABELS, to_col="GROUP", controls="controls_match.tsv"):
+def group_variants(df, from_col="CLNSIG", groups=GROUPS_WITH_LABELS, to_col="GROUP", controls=CONTROLS):
     """ 
     Groups variants by 'groups' based on information in 'from_col'.
     Adjusts RANK_SCORE by subtracting CLIN Score to mitigate bias.
@@ -13,22 +13,24 @@ def group_variants(df, from_col="CLNSIG", groups=GROUPS_WITH_LABELS, to_col="GRO
     Returns:
     df (pd.DataFrame): the df extended with 'to_column' values and 'ADJUSTED_SCORE'. 
     """
-    def mark_controls(df, controls):
-        c = pd.read_csv(controls, sep="\t")
-        control_set = set(c["chrom_pos"])
-        df["IS_CONTROL"] = df["CHROM_POS"].isin(control_set)
-        return df
+    df[from_col] = df[from_col].str.strip()
     
     def classify(clnsig):
         for group, labels in groups.items():
             if clnsig in labels:
                 return group
+        print(f"Unmatched CLNSIG value: {clnsig}")  # Log unmatched values
         return "other"  # Return original label if no match is found
-    
-    df["ADJUSTED_SCORE"] = df["RANK_SCORE"] - df["CLIN"]
 
     # Apply the classification logic to the DataFrame
     df[to_col] = df[from_col].apply(classify)
     
+    df["ADJUSTED_SCORE"] = df["RANK_SCORE"] - df["CLIN"]
+    
     return mark_controls(df, controls)
 
+def mark_controls(df, controls):
+    c = pd.read_csv(controls, sep="\t")
+    control_set = set(c["chrom_pos"])
+    df["IS_CONTROL"] = df["CHROM_POS"].isin(control_set)
+    return df

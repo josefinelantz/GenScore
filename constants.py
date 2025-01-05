@@ -4,27 +4,23 @@ GROUPS_WITH_LABELS = {
                'Benign/Likely_benign',
                'Benign|drug_response',
                'Likely_benign|other',
-               'Likely_benign|drug_response|other',
-               'Likely_benign|other, Likely_pathogenic|association'
-               ], 
+               'Likely_benign|drug_response|other'],
     "pathogenic": ['Pathogenic',
                    'Pathogenic/Likely_pathogenic',
                    'Pathogenic|other',
                    'Likely_pathogenic',
                    'Likely_pathogenic|association',
-                   'Pathogenic/Likely_pathogenic|risk_factor',
-                   'drug_response, Pathogenic/Likely_pathogenic'
-                   ],
+                   'Pathogenic/Likely_pathogenic|risk_factor'],
     "uncertain": ['Conflicting_classifications_of_pathogenicity',
                   'Conflicting_classifications_of_pathogenicity|drug_response|other',
                   'Conflicting_classifications_of_pathogenicity|association',
-                  'Uncertain_significance'
-                  ],
-    "other": ['', 'not_provided']
-    }
+                  'Uncertain_significance'],
+    "other": ['', 'not_provided', 'drug_response']
+}
 
 INFO_KEYS = ["CSQ", "RankResult", "RankScore", "CLNSIG", "AF", "DP", "GNOMAD_AF"]
 CSQ_KEYS = ["Consequence", "SIFT", "PolyPhen", "gnomAD_AF", "COSMIC", "CLIN_SIG"]
+CONTROLS = "controls_match.tsv"
 
 CONSEQUENCE_ORDER = [
     "transcript_ablation",

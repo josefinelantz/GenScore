@@ -2,8 +2,8 @@
 import pandas as pd
 import argparse
 import matplotlib.pyplot as plt
-from scripts.parse_vcf import parse_vcf
-from scripts.analyze_scores import analyze_scores, mark_controls, subtract_clin_score, calculate_metrics
+from scripts.extract_data import parse_vcf
+from scripts.process_data import analyze_scores, mark_controls, subtract_clin_score, calculate_metrics
 from scripts.visualize_scores import violin_plot_by_group, violin_benign_pathogenic, scatter_plot_with_controls
 from scripts.analyze_annotated import filter_annotated_variants, compare_group_statistics, identify_overlaps, evaluate_thresholds, main_investigate_controls, investigate_low_scoring_controls, analyze_overlap_features, main_adjust_and_evaluate, main_further_refinements
 from scripts.reweight.py import main_handle_low_scoring_controls
@@ -14,7 +14,7 @@ def main(vcf_path, output_dir, controls_path):
     print("Parsing VCF...")
     df = parse_vcf(vcf_path)
 
-    ### GROUP VARIANTS ###
+    ### GROUP VARIANTS AND MARK CONTROLS###
     print("Grouping variants...")
     df = analyze_scores(df)
 
