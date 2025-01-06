@@ -40,7 +40,6 @@ def filter_data_and_adjust_scores(df, groups=["benign", "pathogenic"]):
     # retain rows for benign and pathogenic groups
     filtered_df = df[df["GROUP"].isin(groups)].copy()
 
-
     # Summarize the filtered dataset
     filtered_summary = {
         "Total Rows": filtered_df.shape[0],

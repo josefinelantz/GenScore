@@ -61,7 +61,7 @@ def plot_scatter_with_controls(df, score_col="RANK_SCORE", group_col="GROUP", co
     plt.tight_layout()
     plt.savefig(output_path)
 
-def plot_violin_adjusted_scores_by_group(filtered_df, score_col="ADJUSTED_SCORE", group_col="GROUP", output_path="violin_adjusted_scores_by_group.png"):
+def plot_violin_adjusted_scores_by_group(filtered_df, score_col="ADJUSTED_SCORE", group_col="GROUP"):
     """
     Plot RankScore for benign and pathogenic variants. 
     Parameters:
@@ -77,9 +77,9 @@ def plot_violin_adjusted_scores_by_group(filtered_df, score_col="ADJUSTED_SCORE"
     plt.ylabel("Adjusted Score")
     plt.grid() 
     plt.legend(loc="lower right")
-    plt.savefig(output_path)
+    plt.savefig("violin_adjusted_scores_by_group.png")
 
-def plot_density_adjusted_scores_by_group(filtered_df, score_col="ADJUSTED_SCORE", group_col="GROUP", output_path="density_plot_adjusted_scores_by_group.png"):
+def plot_density_adjusted_scores_by_group(filtered_df, score_col="ADJUSTED_SCORE", group_col="GROUP"):
     plt.figure(figsize=(10, 6))
     sns.kdeplot(
         data=filtered_df,
@@ -93,27 +93,31 @@ def plot_density_adjusted_scores_by_group(filtered_df, score_col="ADJUSTED_SCORE
     plt.xlabel("Adjusted Score")
     plt.ylabel("Density")
     plt.grid()
-    plt.savefig(output_path)
+    plt.savefig("density_plot_adjusted_scores_by_group.png")
 
-def visualize_metrics(metrics_df, output_path="visualize_threshold_metrics.png"):
+def visualize_metrics(metrics_df):
     """
     Visualizes precision, recall, and F1-score across thresholds.
     Args:
         metrics_df (pd.DataFrame): A DataFrame containing 'threshold', 'precision', 'recall', and 'f1_score'.
     """
     plt.figure(figsize=(10, 6))
-    plt.plot(metrics_df["Threshold"], metrics_df["Precision"], label="Precision", color="blue")
-    plt.plot(metrics_df["Threshold"], metrics_df["Recall"], label="Recall", color="orange")
-    plt.plot(metrics_df["Threshold"], metrics_df["F1-Score"], label="F1-Score", color="green")
+    plt.plot(metrics_df["threshold"], metrics_df["precision"], label="Precision", color="blue")
+    plt.plot(metrics_df["threshold"], metrics_df["recall"], label="Recall", color="orange")
+    plt.plot(metrics_df["threshold"], metrics_df["f1-Score"], label="F1-Score", color="green")
     plt.axvline(metrics_df.loc[metrics_df["fit_score"].idmax(), "threshold"], color="red", linestyle="--", label="Optmimal Threshold")
     plt.xlabel("Threshold")
     plt.ylabel("Metric Score")
-    plt.title("Precision, Recall, and F1-Score vs Threshold")
+    # Finde optimal threshold with max F1-Score
+    optimal_threshold = metrics_df.loc[metrics_df["f1_score"].idmax(), "threshold"]
+
+    plt.title(f"Precision, Recall, and F1-Score at Threshold: {optimal_threshold}")
     plt.legend()
     plt.grid(True)
-    plt.savefig(output_path)
+    plt.savefig(f"threshold_analysis_threshold: {optimal_threshold}.png")
+    print(f"Optimal Threshold (Max F1-Score): {optimal_threshold}")
 
-def plot_confusion_matrix(df, threshold, output_path="confusion_matrix.png"):
+def plot_confusion_matrix(df, threshold):
     # Classify variants
     df = classify_variants(df, threshold)
     
@@ -131,7 +135,7 @@ def plot_confusion_matrix(df, threshold, output_path="confusion_matrix.png"):
     
     # Save as PNG
     plt.title(f"Confusion Matrix (Threshold = {threshold}")
-    plt.savefig(output_path, dpi=300, bbox_inches="tight")
+    plt.savefig(f"confusion_matrix_threshold_{threshold}.png", dpi=300, bbox_inches="tight")
     plt.show()
     
     # Print classification report
@@ -140,14 +144,14 @@ def plot_confusion_matrix(df, threshold, output_path="confusion_matrix.png"):
     
     return cm
 
-def plot_feature_contributions(melted_df, output_path="feature_contributions_before_reweighting.png"):
+def plot_feature_contributions(melted_df, threshold):
     # Plot feature contributions
     plt.figure(figsize=(12, 6))
     sns.boxplot(data=melted_df, x="Feature", y="Score", hue="GROUP", palette="Set2")
-    plt.title("Feature Contributions by Group")
+    plt.title(f"Feature_contributions_at_threshold_{threshold}.png")
     plt.xlabel("Feature")
     plt.ylabel("Score")
     plt.legend(title="Group")
     plt.tight_layout()
-    plt.savefig(output_path)
+    plt.savefig(f"feature_contributions_at_threshold_{threshold}.png")
     plt.show()

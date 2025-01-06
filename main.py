@@ -6,7 +6,7 @@ from constants import CONTROLS
 from scripts.extract_data import parse_vcf
 from scripts.process_data import group_variants, filter_data_and_adjust_scores, melt_data
 from scripts.visualize_data import plot_scatter_with_controls, plot_violin_adjusted_scores_by_group, plot_density_adjusted_scores_by_group, visualize_metrics, plot_confusion_matrix, plot_feature_contributions
-from scripts.calculate_metrics import prepare_data, calculate_metrics_by_threshold
+from scripts.calculate_metrics import prepare_data, calculate_metrics_by_threshold, recalculate_rank_scores
 
 def main(vcf_path, output_dir, controls_path=CONTROLS):
     ### PARSE ###
@@ -32,6 +32,7 @@ def main(vcf_path, output_dir, controls_path=CONTROLS):
     ### THRESHOLD ANALYSIS
     # set thresholds and generate true_labels 
     thresholds = range(-15, 20)
+    # assuming df has cols ADJUSTED_SCORE, GROUP
     filtered_data, y_true = prepare_data(filtered_df)
     # calculate metrics for thresholds 
     threshold_metrics = calculate_metrics_by_threshold(filtered_data["ADJUSTED_SCORE"], y_true, thresholds)
@@ -40,76 +41,45 @@ def main(vcf_path, output_dir, controls_path=CONTROLS):
 
     # calculate and visualize metrics for optimal threshold 
     optimal_threshold = threshold_metrics.loc[threshold_metrics["f1_score"].idmax(), "threshold"]
-    y_pred = (filtered_data["ADJUSTED_SCORE"] >= optimal_threshold).astype(int)
+    y_pred = (filtered_data["ADJUSTED_SCORE"] >= optimal_threshold).astype(float)
     
+    ### VISUALIZE METRICS FOR OPTIMAL THRESHOLD
     # plot the confusion matrix
-    plot_confusion_matrix(y_true, y_pred, threshold=optimal_threshold)
+    plot_confusion_matrix(filtered_data, optimal_threshold)
     
     # melt the data for plotting feature contributions 
     melted_data = melt_data(filtered_data)
 
     # plot feature contributions
-    plot_feature_contributions(melted_data)
+    plot_feature_contributions(melted_data, optimal_threshold)
 
-    # reweight, recalculate, and revisualize
-    weights = {"AF": 0.5, "PP": 1.0, "CON": 1.2, "VCQF": 1.2, "LIN": 1.0, "CLIN": 0.5}
-    df["REWEIGHTED_RANK_SCORE"] = (
-    df["AF"] * weights["AF"] +
-    df["PP"] * weights["PP"] +
-    df["CON"] * weights["CON"] +
-    df["VCQF"] * weights["VCQF"] +
-    df["LIN"] * weights["LIN"] +
-    df["CLIN"] * weights["CLIN"]
-)
-    df[(df["IS_CONTROL"]) & (df["RANK_SCORE"] > 5) & (df["RANK_SCORE"] < 15)]
+    ### REWEIGHT, RECALCULATE AND REVISUALIZE 
+    # define new weights 
+    weights = {
+        "AF": 0.5, 
+        "PP": 1.0, 
+        "CON": 1.2, 
+        "VCQF": 1.2, 
+        "LIN": 1.0,
+        "CLIN": 0.5
+    }
 
-    df["CLIN"] = df["CLIN"].apply(lambda x: 0 if x < 0 else x)
-    
-    updated_overlap_controls = df[(df["IS_CONTROL"]) & (df["REWEIGHTED_RANK_SCORE"] > 5) & (df["REWEIGHTED_RANK_SCORE"] < 15)]
-    updated_overlap_controls[["AF", "PP", "CON", "VCQF", "LIN", "CLIN"]].boxplot(figsize=(10, 6))
-    plt.title("Feature Components in Overlap Region After Reweighting")
-    plt.ylabel("Scores")
-    plt.xticks(rotation=45)
-    plt.savefig("reweighted.png")
-    plt.show()
-    uncertain_variants = df[df["CLNSIG"] == "Uncertain_significance"]
-    uncertain_variants.head()
-    low_scoring_controls[["CLIN", "RANK_SCORE"]].describe()
+    # recalculate scores 
+    df = recalculate_rank_scores(filtered_data.copy())
 
-    metrics = calculate_metrics(y_true, y_pred, y_scores)
-    print("Metrics:")
-    for metric, value in metrics.items():
-        print(f"{metric}: {value:.2f}")
+    # repeat threshold analysis
+    threshold_metrics_updated = calculate_metrics_by_threshold(df["UPDATED_RANK_SCORE"], y_true, thresholds)
+    
+    # visualize updated metrics 
+    visualize_metrics(threshold_metrics_updated)
 
-    analyze_overlap_features(df)
-    ## Investigate Feature Components for Overlapping Variants
-    overlap_controls = df[(df["IS_CONTROL"]) & (df["RANK_SCORE"] > 5) & (df["RANK_SCORE"] < 15)]
-    print(overlap_controls[["AF", "PP", "CON", "VCQF", "LIN", "CLIN"]].describe())
-    
-    df, updated_overlap_controls = main_adjust_and_evaluate(df)
-    df = main_further_refinements(df)
-    
-    df, false_positives, false_negatives = main_optimal_threshold_analysis(df)
-    #print(uncertain_variants[["VARIANT", "RANK_SCORE", "NO_CLIN_RANK_SCORE", "GROUP"]].head())
-    #plot_variant_scores(df[["Group", "RankScore"]])
-   # print("Grouping variants...")
-   # groups, counts, grouped_data_groups, grouped_data_all = group_variants(df)
-    #print("Variant counts:", counts)
-
-    #print("Generating box plot...")
-    #plot_box(groups, output_path=f"{output_dir}/boxplot.png")
-    
-   # print("Plotting rank_score distribution....")
-    #plot_box_distribution(df, output_path=f"{output_dir}/rank_score_dist_box.png")
-    # plot_hist_distribution(df, output_path=f"{output_dir}/rank_score_dist_hist.png")
-
-    # print("Plotting grouped_data....")
-    #plot_grouped_data(grouped_data_groups, output_path=f"{output_dir}/grouped_data.png")
-    
-    # print("Generating stacked plot...")
-    # plot_stacked(groups, output_path=f"{output_dir}/stackedplot.png")
-    
-    # print("Plots generated successfully.")
+    # plot Confusion Matrix for Updated Scores
+    optimal_threshold_updated = threshold_metrics_updated.loc[threshold_metrics_updated["f1_score"].idxmax(), "threshold"]
+    y_pred_updated = (df["UPDATED_RANK_SCORE"] >= optimal_threshold_updated).astype(int)
+    plot_confusion_matrix(df, optimal_threshold_updated)
+     # melt data
+    melted_data = melt_data(df)
+    plot_feature_contributions(melted_data, optimal_threshold_updated)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate Genmod scores from VCF files.")
