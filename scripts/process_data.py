@@ -19,14 +19,15 @@ def group_variants(df, from_col="CLNSIG", groups=GROUPS_WITH_LABELS, to_col="GRO
         for group, labels in groups.items():
             if clnsig in labels:
                 return group
-        print(f"Unmatched CLNSIG value: {clnsig}")  # Log unmatched values
+        #print(f"Unmatched CLNSIG value: {clnsig}")  # Log unmatched values
         return "other"  # Return original label if no match is found
 
     # Apply the classification logic to the DataFrame
     df[to_col] = df[from_col].apply(classify)
-    
-    #df["ADJUSTED_SCORE"] = df["RANK_SCORE"] - df["CLIN"]
-    
+
+    df["ADJUSTED_SCORE"] = df["RANK_SCORE"] - df["CLIN"]
+
+        
     return mark_controls(df, controls)
 
 def mark_controls(df, controls):
@@ -39,7 +40,6 @@ def filter_data_and_adjust_scores(df, groups=["benign", "pathogenic"]):
     # retain rows for benign and pathogenic groups
     filtered_df = df[df["GROUP"].isin(groups)].copy()
 
-    filtered_df["ADJUSTED_SCORE"] = filtered_df["RANK_SCORE"] - filtered_df["CLIN"]
 
     # Summarize the filtered dataset
     filtered_summary = {

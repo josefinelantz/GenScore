@@ -72,7 +72,6 @@ def parse_vcf(file_path):
         csq = parse_csq(csq_fields, info_keys.get("CSQ", ""))
         csq_keys = extract_csq_keys(csq, keys = ["Consequence", "SIFT", "PolyPhen", "gnomAD_AF", "COSMIC", "CLIN_SIG"])
 
-
         # Format strings for extracting controls
         chrom_pos = f"{chrom}_{pos}"
         ref_alt = f"{ref}_{alt}"

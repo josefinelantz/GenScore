@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from sklearn.metrics import precision_score, recall_score, f1_score, roc_curve, auc
+from sklearn.metrics import precision_score, recall_score, f1_score
 
 def prepare_data(filtered_df, use_col="GROUP", groups=["benign", "pathogenic"]):
     """ Retains rows that have GROUP in groups. 
