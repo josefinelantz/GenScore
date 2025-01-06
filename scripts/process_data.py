@@ -1,6 +1,6 @@
 import pandas as pd
 
-from constants import GROUPS_WITH_LABELS, CONTROLS
+from output.constants import GROUPS_WITH_LABELS, CONTROLS
 
 def group_variants(df, from_col="CLNSIG", groups=GROUPS_WITH_LABELS, to_col="GROUP", controls=CONTROLS):
     """ 

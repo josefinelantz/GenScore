@@ -1,6 +1,6 @@
 from cyvcf2 import VCF
 import pandas as pd
-from constants import INFO_KEYS, CSQ_KEYS
+from output.constants import INFO_KEYS, CSQ_KEYS
 
 def parse_csq(fields, csq_str):
     csq = []
