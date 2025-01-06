@@ -2,98 +2,57 @@
 import pandas as pd
 import argparse
 import matplotlib.pyplot as plt
+from constants import CONTROLS
 from scripts.extract_data import parse_vcf
-from scripts.process_data import analyze_scores, mark_controls, subtract_clin_score, calculate_metrics
-from scripts.visualize_scores import violin_plot_by_group, violin_benign_pathogenic, scatter_plot_with_controls
-from scripts.analyze_annotated import filter_annotated_variants, compare_group_statistics, identify_overlaps, evaluate_thresholds, main_investigate_controls, investigate_low_scoring_controls, analyze_overlap_features, main_adjust_and_evaluate, main_further_refinements
-from scripts.reweight.py import main_handle_low_scoring_controls
-from scripts.calculate_metrics import main_optimal_threshold_analysis
+from scripts.process_data import group_variants, filter_data_and_adjust_scores, melt_data
+from scripts.visualize_data import plot_scatter_with_controls, plot_violin_adjusted_scores_by_group, plot_density_adjusted_scores_by_group, visualize_metrics, plot_confusion_matrix, plot_feature_contributions
+from scripts.calculate_metrics import prepare_data, calculate_metrics_by_threshold
 
-def main(vcf_path, output_dir, controls_path):
+def main(vcf_path, output_dir, controls_path=CONTROLS):
     ### PARSE ###
     print("Parsing VCF...")
     df = parse_vcf(vcf_path)
 
-    ### GROUP VARIANTS AND MARK CONTROLS###
+    ### GROUP VARIANTS, MARK CONTROLS ###
     print("Grouping variants...")
-    df = analyze_scores(df)
+    df = group_variants(df.copy())
 
-    ### MARK CONTROLS ### 
-    controls = pd.read_csv(controls_path, sep="\t")
+    ### SCATTER WITH CONTROLS ### 
+    plot_scatter_with_controls(df, "RANK_SCORE", output_path=f"{output_dir}/scatter_plot_by_group_with_controls.png")
 
-    df = mark_controls(df, controls)
+    ### FILTER DATA AND ADJUST SCORES ### 
+    filtered_df = filter_data_and_adjust_scores(df)
+   
+    ### VIOLIN PLOT BY GROUP (PATHOGENIC vs. BENIGN) ###
+    plot_violin_adjusted_scores_by_group(filtered_df, "ADJUSTED_SCORE", output_path=f"{output_dir}/violin_plot_by_group.png")
 
-    ### SUBTRACT CLIN SCORE ### 
-    df = subtract_clin_score(df)
-
-    ### VIOLIN BY GROUP ###
-
-    violin_plot_by_group(df, "NO_CLIN_RANK_SCORE", output_path=f"{output_dir}/violin_by_group.png")
-
-    ### Convert GROUP to binary labels 
-    df["y_true"] = df["GROUP"].apply(lambda x: 1 if x == "pathogenic" else 0)  # Convert GROUP to binary labels
-    threshold = 10.0  # Example threshold for classification
-
-    # Predicted labels based on the threshold
-    df["y_pred"] = df["NO_CLIN_RANK_SCORE"].apply(lambda x: 1 if x >= threshold else 0)
-
-    # Scores to use for AUC calculation
-    y_true = df["y_true"].values  # Ground truth labels
-    y_pred = df["y_pred"].values  # Predicted binary labels
-    y_scores = df["NO_CLIN_RANK_SCORE"].values  # Continuous scores
+    ### DENSITY PLOT BY GROUP (PATHOGENIC vs. BENIGN) ###
+    plot_density_adjusted_scores_by_group(filtered_df, "ADJUSTED_SCORE", output_path=f"{output_dir}/density_plot_by_group.png")
     
-    metrics = calculate_metrics(y_true, y_pred, y_scores)
+    ### THRESHOLD ANALYSIS
+    # set thresholds and generate true_labels 
+    thresholds = range(-15, 20)
+    filtered_data, y_true = prepare_data(filtered_df)
+    # calculate metrics for thresholds 
+    threshold_metrics = calculate_metrics_by_threshold(filtered_data["ADJUSTED_SCORE"], y_true, thresholds)
+    # visualize metrics 
+    visualize_metrics(threshold_metrics)
+
+    # calculate and visualize metrics for optimal threshold 
+    optimal_threshold = threshold_metrics.loc[threshold_metrics["f1_score"].idmax(), "threshold"]
+    y_pred = (filtered_data["ADJUSTED_SCORE"] >= optimal_threshold).astype(int)
     
-    ### Filter annotated variants
-    filtered_df = filter_annotated_variants(df).copy() # ensure independent DataFrame
-
-    ### Violin benign and pathogenic
-    violin_benign_pathogenic(filtered_df)
-
-    ### Compare Group statistics
-    compare_group_statistics(filtered_df)
-
-    ### Identify overlaps
-    threshold_low, threshold_high = 5, 15 # example thresholds
-    overlap_df = identify_overlaps(filtered_df, threshold_low, threshold_high)
-
-    ### Evaluate Thresholds
-    thresholds = [2, 4, 6, 8, 10]
-    evaluate_thresholds(filtered_df, threshold)
-
-    scatter_plot_with_controls(filtered_df)
-
-    # investigate low-scoring controls 
-    low_scoring_controls, overlap_df = main_investigate_controls(df)
-
-    low_scoring_controls = df[(df["IS_CONTROL"]) & (df["RANK_SCORE"] < 10)]
-    low_scoring_controls.describe()
-
-    # 1. Investigate low-scoring controls
-    df_low_controls = investigate_low_scoring_controls(df)
+    # plot the confusion matrix
+    plot_confusion_matrix(y_true, y_pred, threshold=optimal_threshold)
     
-    df.loc[(df["IS_CONTROL"]) & (df["CLNSIG"] == "Uncertain_significance"), "CLIN"] = 0
-    
-    df.loc[(df["IS_CONTROL"]) & (df["GROUP"] == "other"), "GROUP"] = "control_uncertain"
-    print(df.loc[df["VARIANT"] == "21_36206711_C_T", ["RANK_SCORE", "NO_CLIN_RANK_SCORE", "CLIN"]])
+    # melt the data for plotting feature contributions 
+    melted_data = melt_data(filtered_data)
 
-    df = main_handle_low_scoring_controls(df)
+    # plot feature contributions
+    plot_feature_contributions(melted_data)
 
-    # reweight
-    df = main_handle_low_scoring_controls(df)
-
-    overlap_controls = df[(df["IS_CONTROL"]) & (df["RANK_SCORE"] > 5) & (df["RANK_SCORE"] < 15)]
-    print(overlap_controls[["AF", "PP", "CON", "VCQF", "LIN", "CLIN"]].describe())
-
-    updated_overlap_controls = df[(df["IS_CONTROL"]) & (df["REWEIGHTED_RANK_SCORE"] > 5) & (df["REWEIGHTED_RANK_SCORE"] < 15)]
-    print(updated_overlap_controls[["AF", "PP", "CON", "VCQF", "LIN", "CLIN", "REWEIGHTED_RANK_SCORE"]].describe())
-    updated_overlap_controls[["AF", "PP", "CON", "VCQF", "LIN", "CLIN"]].boxplot(figsize=(10, 6))
-    plt.title("Feature Components in Overlap Region After Reweighting")
-    plt.ylabel("Scores")
-    plt.xticks(rotation=45)
-    plt.show()
-
-    weights = {"AF": 1.0, "PP": 1.0, "CON": 1.2, "VCQF": 1.2, "LIN": 1.0, "CLIN": 0.5}
+    # reweight, recalculate, and revisualize
+    weights = {"AF": 0.5, "PP": 1.0, "CON": 1.2, "VCQF": 1.2, "LIN": 1.0, "CLIN": 0.5}
     df["REWEIGHTED_RANK_SCORE"] = (
     df["AF"] * weights["AF"] +
     df["PP"] * weights["PP"] +

@@ -1,8 +1,6 @@
-# tests/test_visualize.py
-
 import pytest
 import pandas as pd
-from scripts.visualize import plot_box, plot_stacked
+from scripts.visualize_data import plot_box, plot_stacked
 import os
 
 def test_plot_box(tmp_path):

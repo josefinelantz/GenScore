@@ -1,4 +1,4 @@
-import pandas as pd 
+import pandas as pd
 
 from constants import GROUPS_WITH_LABELS, CONTROLS
 
@@ -25,7 +25,7 @@ def group_variants(df, from_col="CLNSIG", groups=GROUPS_WITH_LABELS, to_col="GRO
     # Apply the classification logic to the DataFrame
     df[to_col] = df[from_col].apply(classify)
     
-    df["ADJUSTED_SCORE"] = df["RANK_SCORE"] - df["CLIN"]
+    #df["ADJUSTED_SCORE"] = df["RANK_SCORE"] - df["CLIN"]
     
     return mark_controls(df, controls)
 
@@ -34,3 +34,35 @@ def mark_controls(df, controls):
     control_set = set(c["chrom_pos"])
     df["IS_CONTROL"] = df["CHROM_POS"].isin(control_set)
     return df
+
+def filter_data_and_adjust_scores(df, groups=["benign", "pathogenic"]):
+    # retain rows for benign and pathogenic groups
+    filtered_df = df[df["GROUP"].isin(groups)].copy()
+
+    filtered_df["ADJUSTED_SCORE"] = filtered_df["RANK_SCORE"] - filtered_df["CLIN"]
+
+    # Summarize the filtered dataset
+    filtered_summary = {
+        "Total Rows": filtered_df.shape[0],
+        "Group Counts": filtered_df['GROUP'].value_counts().to_dict(),
+        "Adjusted Score Range": (filtered_df['ADJUSTED_SCORE'].min(), filtered_df['ADJUSTED_SCORE'].max())
+    }
+    print(filtered_summary)
+    return filtered_df
+
+def classify_variants(df, threshold):
+    """Generates predictions based on optimal threshold.
+    """
+    df = df.copy()
+    df["y_pred"] = (df["ADJUSTED_SCORE"] >= threshold).astype(int)
+    df["y_true"] = df["GROUP"].map({"benign": 0, "pathogenic": 1})
+    return df
+
+def melt_data(df):
+    melted_data = df.melt(
+        id_vars=["GROUP"], 
+        value_vars=["AF", "PP", "CON", "VCQF", "LIN", "CLIN"], 
+        var_name="Feature", 
+        value_name="Score"
+    )
+    return melted_data
