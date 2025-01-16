@@ -26,7 +26,7 @@ genmod_evaluation/
 
 ```bash
 git clone <repo_url>
-cd genmod_evaluation
+cd GenScore
 ```
 
 2. Create and activate a virtual environment 
