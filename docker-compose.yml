@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+  vcf-parser:
+    build: ./services/vcf_parser
+    volumes:
+      - ./data:/data
+      - ./outputs:/outputs
+    environment:
+      - VCF_FILE=/data/test_patient.vcf
+      - OUTPUT_FILE=/outputs/genes.json
