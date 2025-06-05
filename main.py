@@ -2,11 +2,11 @@
 import pandas as pd
 import argparse
 import matplotlib.pyplot as plt
-from output.constants import CONTROLS
-from scripts.extract_data import parse_vcf
-from scripts.process_data import group_variants, filter_data_and_adjust_scores, melt_data
-from scripts.visualize_data import plot_scatter_with_controls, plot_violin_adjusted_scores_by_group, plot_density_adjusted_scores_by_group, visualize_metrics, plot_confusion_matrix, plot_feature_contributions
-from scripts.calculate_metrics import prepare_data, calculate_metrics_by_threshold, recalculate_rank_scores
+from data.constants import CONTROLS
+from genscore.io import parse_vcf
+from genscore.process_data import group_variants, filter_data_and_adjust_scores, melt_data
+from genscore.visualize_data import plot_scatter_with_controls, plot_violin_adjusted_scores_by_group, plot_density_adjusted_scores_by_group, visualize_metrics, plot_confusion_matrix, plot_feature_contributions
+from genscore.calculate_metrics import prepare_data, calculate_metrics_by_threshold, recalculate_rank_scores
 
 def main(vcf_path, output_dir, controls_path=CONTROLS):
     ### PARSE ###

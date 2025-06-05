@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 import numpy as np
-from scripts.process_data import group_variants, mark_controls
+from genscore.process_data import group_variants, mark_controls
 
 # Sample GROUPS_WITH_LABELS for testing
 GROUPS_WITH_LABELS = {
