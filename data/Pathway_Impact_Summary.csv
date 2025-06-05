@@ -1,0 +1,23 @@
+,pathway,total_score,genes
+15,KEGG:MockPathway_R,137.5,"RN7SL501P, RP1-92O14.3, RP11-244H3.4, RP5-968P14.2, RPL22"
+10,KEGG:MockPathway_M,60.0,"MIR4418, MPL, MRPS15"
+19,Reactome:MockFunction_2,59.5,"RP5-968P14.2, RPL22"
+1,Reactome:MockFunction_1,47.5,"AJAP1, CAMTA1, CAMTA1-IT1, CLSTN1, GNB1"
+3,KEGG:MockPathway_C,41.0,"CAMTA1, CAMTA1-IT1, CLSTN1, CSF3R"
+9,Reactome:MockFunction_8,35.5,"LOC101928728, MIR4418"
+21,Reactome:MockFunction_6,32.0,ZMYM6
+20,KEGG:MockPathway_Z,32.0,ZMYM6
+18,Reactome:MockFunction_4,27.5,RP11-244H3.4
+17,Reactome:MockFunction_3,26.0,RP1-92O14.3
+16,Reactome:MockFunction_P,24.5,RN7SL501P
+14,Reactome:MockFunction_D,23.0,PIK3CD
+13,KEGG:MockPathway_P,23.0,PIK3CD
+12,Reactome:MockFunction_5,21.5,MRPS15
+11,Reactome:MockFunction_L,20.0,MPL
+8,KEGG:MockPathway_L,17.0,LOC101928728
+7,Reactome:MockFunction_N,15.5,KAZN
+6,KEGG:MockPathway_K,15.5,KAZN
+5,KEGG:MockPathway_G,14.0,GNB1
+4,Reactome:MockFunction_R,12.5,CSF3R
+0,KEGG:MockPathway_A,11.5,"AJAP1, ARID1A"
+2,Reactome:MockFunction_A,6.5,ARID1A

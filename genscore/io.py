@@ -1,4 +1,8 @@
 from cyvcf2 import VCF
+from collections import defaultdict
+import json
+import re
+import gzip
 
 def parse_vcf(file_path, max_variants=None):
     """
@@ -55,3 +59,42 @@ def parse_vcf(file_path, max_variants=None):
             parsed_variants.append(variant_data) 
         
     return parsed_variants 
+
+def extract_genes_from_vcf(path_to_vcf: str, output_path: str) -> set:
+    """
+    Extract unique gene symbols from the CSQ field in a VEP-annotated VCF.
+
+    Args:
+        path_to_vcf (str): Path to a VCF file (gzipped)
+
+    Returns:
+        Set of gene symbols (str)
+    """
+    genes = set()
+    csq_fields = []
+    symbol_index = None
+
+    with gzip.open(path_to_vcf, "rt") as f:
+        for line in f:
+            if line.startswith("##INFO=<ID=CSQ"):
+                match = re.search(r'Format: (.+)">', line)
+                if match:
+                    csq_fields = match.group(1).split("|")
+                    symbol_index = csq_fields.index("SYMBOL") if "SYMBOL" in csq_fields else None
+            elif line.startswith("#"):
+                continue
+            else:
+                if symbol_index is None:
+                    continue
+                parts = line.strip().split("\t")
+                info = parts[7]
+                match = re.search(r'CSQ=([^;]+)', info)
+                if match:
+                    csq_data = match.group(1).split(",")
+                    for ann in csq_data:
+                        fields = ann.split("|")
+                        if len(fields) > symbol_index:
+                            gene = fields[symbol_index]
+                            if gene:
+                                genes.add(gene)
+    return genes
